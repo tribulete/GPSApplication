@@ -1,11 +1,11 @@
 package com.ibermatica.gpsapplication
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Environment
+import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.CoroutineScope
@@ -17,7 +17,6 @@ import okhttp3.Response
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.io.OutputStreamWriter
 import java.net.URLEncoder
 
 
@@ -43,7 +42,8 @@ class MainActivity : AppCompatActivity() {
 
             url = URLEncoder.encode(url, "utf-8")
 
-            findViewById<TextView>(R.id.tvRuta).text = "Convirtirndo enlace gmaps a GPX"
+            findViewById<TextView>(R.id.tvRuta).text = "Convirtiendo enlace gmaps a GPX"
+            Log.i("defaultOperation","Convirtiendo enlace gmaps a GPX")
 
             val request: Request = Request.Builder()
                 .url("https://mapstogpx.com/load.php?d=default&lang=en&elev=off&tmode=off&pttype=fixed&o=gpx&cmt=off&desc=off&descasname=off&w=on&dtstr=20220509_103135&gdata=$url")
@@ -77,17 +77,18 @@ class MainActivity : AppCompatActivity() {
                 .addHeader("sec-ch-ua-mobile", "?0")
                 .addHeader("sec-ch-ua-platform", "\"Windows\"")
                 .build()
-            val response: Response = client.newCall(request).execute()
-            gpx = response.body()?.string()
 
-            findViewById<TextView>(R.id.tvRuta).text = "Trasformacion finalizada.Escribiendo fichero GPX en local"
-            Thread.sleep(1_000)  // wait for 1 second
+            val response: Response = client.newCall(request).execute()
+            Log.i("defaultOperation","Respuesta obtenida del servidor mapstogpx")
+            gpx = response.body()?.string()
+            Log.i("defaultOperation","Trasformacion finalizada.Escribiendo fichero GPX en local")
+
             runOnUiThread {
                 findViewById<TextView>(R.id.tvRuta).text = gpx
                 if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
                     writeGPXToFile()
                     findViewById<TextView>(R.id.tvRuta).text = "El fichero GPX esta en $(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)?.absolutePath)"
-                    Thread.sleep(1_000)  // wait for 1 second
+                    Log.i("defaultOperation","El fichero GPX esta en $(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)?.absolutePath)")
                 }else {
                     requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 100)
                 }
@@ -119,14 +120,19 @@ class MainActivity : AppCompatActivity() {
 
             stream.write(gpx?.toByteArray())
             findViewById<TextView>(R.id.tvRuta).text = "Escritura fichero GPX completada"
-            Thread.sleep(1_000)  // wait for 1 second
+            Log.i("writeGPXToFile","Escritura fichero GPX completada")
+
         } catch (e: IOException) {
-            findViewById<TextView>(R.id.tvRuta).text = e.printStackTrace().toString()
-            Thread.sleep(1_000)  // wait for 1 second
+            Log.e("writeGPXToFile","ERROR")
             e.printStackTrace()
         } finally {
             stream.close()
         }
+    }
+
+    private fun uploadFileToGdrive (file : File){
+
+
     }
 
 
