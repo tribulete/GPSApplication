@@ -5,9 +5,13 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Environment
+import android.os.StrictMode
+import android.os.StrictMode.ThreadPolicy
 import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import io.github.rybalkinsd.kohttp.dsl.httpPost
+import io.github.rybalkinsd.kohttp.ext.url
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,6 +28,8 @@ class MainActivity : AppCompatActivity() {
 
     var gpx: String? = ""
     var url = "goo.gl/maps/HN4i77mkQiWKsU8v9" //link del google maps sin el https://
+    val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)?.absolutePath + "/rutas"
+    val file = File(path + "/" + "coords.gpx")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,11 +48,11 @@ class MainActivity : AppCompatActivity() {
 
             url = URLEncoder.encode(url, "utf-8")
 
-            findViewById<TextView>(R.id.tvRuta).text = "Convirtiendo enlace gmaps a GPX"
-            Log.i("defaultOperation","Convirtiendo enlace gmaps a GPX")
+            findViewById<TextView>(R.id.tvRuta).text = "2 Convirtiendo enlace gmaps a GPX"
+            Log.i("defaultOperation","2 Convirtiendo enlace gmaps a GPX")
 
             val request: Request = Request.Builder()
-                .url("https://mapstogpx.com/load.php?d=default&lang=en&elev=off&tmode=off&pttype=fixed&o=gpx&cmt=off&desc=off&descasname=off&w=on&dtstr=20220509_103135&gdata=$url")
+                .url("https://mapstogpx.com/load.php?d=default&lang=en&elev=off&tmode=off&pttype=fixed&o=gpx&cmt=off&desc=off&descasname=off&w=off&rn=RutaImportadaDeMaps&dtstr=20220523_170630&gdata=$url")
                 .method("GET", null)
                 .addHeader(
                     "Accept",
@@ -87,14 +93,21 @@ class MainActivity : AppCompatActivity() {
                 findViewById<TextView>(R.id.tvRuta).text = gpx
                 if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
                     writeGPXToFile()
-                    findViewById<TextView>(R.id.tvRuta).text = "El fichero GPX esta en $(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)?.absolutePath)"
-                    Log.i("defaultOperation","El fichero GPX esta en $(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)?.absolutePath)")
+                    findViewById<TextView>(R.id.tvRuta).text = "El fichero GPX esta en $path"
+                    Log.i("defaultOperation","El fichero GPX esta en $path")
                 }else {
                     requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 100)
                 }
+
+                //Subimos a drive
+                findViewById<TextView>(R.id.tvRuta).text = "Subiendo a gdrive"
+                uploadFileToGdrive()
+
             }
         }
     }
+
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -107,14 +120,14 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
-    private fun writeGPXToFile(){
+    private fun writeGPXToFile() {
 
-        val temp = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)?.absolutePath
-        val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)?.absolutePath + "/" + "coords.gpx")
+        Log.i("writeGPXToFile","El fichero GPX estara en $path")
         val stream = FileOutputStream(file)
         try {
 
             if(!file.exists()){
+                file.delete()
                 file.createNewFile()
             }
 
@@ -130,10 +143,37 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun uploadFileToGdrive (file : File){
+    private fun uploadFileToGdrive (){
 
+        Log.i("uploadFileToGdrive","Subiendo a gdrive")
 
+        val policy = ThreadPolicy.Builder()
+            .permitAll().build()
+        StrictMode.setThreadPolicy(policy)
+
+        val token = "4/0AX4XfWiJSfgusjelZ85XQbR7xHSJXBKeBSGQiPCV6_ybdgVseXR27iA3TylPauBnBtNXVQ"
+//        val file = ""
+
+        val response = httpPost {
+            url("https://www.googleapis.com/upload/drive/v3/files?uploadType=media")
+            header {
+                "Authorization" to "Bearer $token"
+            }
+
+            body {
+                file(file)
+            }
+        }
+
+        Log.i("uploadFileToGdrive","response = [${response.toString()}]")
+
+        Log.i("uploadFileToGdrive","Fichero subido a gdrive")
     }
+
+
+
+
+
 
 
 }

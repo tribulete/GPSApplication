@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "193842425463",
+    "project_id": "robucontrol",
+    "storage_bucket": "robucontrol.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:193842425463:android:521958a21820b4c3416072",
+        "android_client_info": {
+          "package_name": "com.ibermatica.gpsapplication"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "193842425463-c1qvnt7djtn6ekcpp8dpit40892khrne.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD74EJHszddn6FHXYKENDfhEf1Dklly1OU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "193842425463-c1qvnt7djtn6ekcpp8dpit40892khrne.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
